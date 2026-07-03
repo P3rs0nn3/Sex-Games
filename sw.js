@@ -1,4 +1,4 @@
-const CACHE_NAME = "vc-perdeu-v2";
+const CACHE_NAME = "vc-perdeu-v3";
 const ASSETS = [
   "./",
   "./index.html",
