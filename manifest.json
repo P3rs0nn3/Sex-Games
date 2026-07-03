@@ -1,0 +1,32 @@
+{
+  "name": "Vc Perdeu - Agora Paga",
+  "short_name": "Vc Perdeu",
+  "description": "Jogo de sorteio - vc perdeu, agora paga!",
+  "id": "/",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#0a0505",
+  "theme_color": "#0a0505",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
