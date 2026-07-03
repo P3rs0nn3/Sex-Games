@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Você Perdeu</title>
+<style>
+  :root{
+    --bg: #0a0505;
+    --bg-2: #170a0a;
+    --red: #e0121f;
+    --red-glow: #ff2a3a;
+    --white: #f5eeee;
+    --dim: #8a6a6a;
+    --gold: #d4a636;
+    --wa: #25d366;
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
+
+  html, body{
+    margin:0; padding:0; height:100%; width:100%;
+    background:var(--bg);
+    overflow:hidden;
+    font-family: "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  #app{
+    position:fixed; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    background:
+      radial-gradient(ellipse at 50% 20%, var(--bg-2) 0%, var(--bg) 65%);
+  }
+
+  .screen{
+    position:absolute; inset:0;
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:8vw;
+  }
+  .screen.active{ display:flex; }
+
+  /* ---------- INTRO ---------- */
+  #screen-intro{
+    background: var(--bg);
+    animation: flashIn 0.5s ease-out;
+  }
+  #screen-intro::before{
+    content:"";
+    position:absolute; inset:0;
+    background: repeating-linear-gradient(
+      45deg, rgba(224,18,31,0.06) 0px, rgba(224,18,31,0.06) 2px,
+      transparent 2px, transparent 14px
+    );
+    pointer-events:none;
+  }
+  .intro-emoji{
+    font-size: 22vw;
+    line-height:1;
+    filter: drop-shadow(0 0 30px rgba(224,18,31,0.6));
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .intro-message{
+    color: var(--red);
+    font-weight:900;
+    font-size: 12vw;
+    letter-spacing: 0.02em;
+    text-transform:uppercase;
+    line-height:1.05;
+    margin-top: 4vw;
+    text-shadow: 0 0 18px rgba(224,18,31,0.85), 0 0 40px rgba(224,18,31,0.4);
+    animation: shake 0.35s ease-in-out 3;
+  }
+  .intro-hint{
+    margin-top:8vw;
+    color: var(--dim);
+    font-size:4vw;
+    font-weight:400;
+    letter-spacing:0.15em;
+    text-transform:uppercase;
+    animation: blink 1.6s ease-in-out infinite;
+  }
+
+  @keyframes flashIn{
+    0%{ background:#fff; }
+    15%{ background:var(--red); }
+    100%{ background:var(--bg); }
+  }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-1.5vw); }
+    75%{ transform:translateX(1.5vw); }
+  }
+  @keyframes pulse{
+    0%,100%{ transform:scale(1); }
+    50%{ transform:scale(1.08); }
+  }
+  @keyframes blink{
+    0%,100%{ opacity:0.35; }
+    50%{ opacity:1; }
+  }
+
+  /* ---------- BUTTON SCREENS ---------- */
+  .mystery-btn{
+    width:38vw; height:38vw;
+    max-width:220px; max-height:220px;
+    border-radius:50%;
+    border: 4px solid var(--red);
+    background: radial-gradient(circle at 35% 30%, #2a0d0d, #0a0505 70%);
+    color: var(--red-glow);
+    font-size:14vw;
+    font-weight:900;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 0 25px rgba(224,18,31,0.55), inset 0 0 20px rgba(224,18,31,0.25);
+    cursor:pointer;
+    animation: floaty 2.2s ease-in-out infinite;
+    transition: transform 0.12s ease;
+  }
+  .mystery-btn:active{ transform: scale(0.9); }
+
+  @keyframes floaty{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-2.5vw); }
+  }
+
+  .legend{
+    margin-top:7vw;
+    color: var(--white);
+    font-size:6vw;
+    font-weight:700;
+    max-width:85vw;
+    line-height:1.3;
+  }
+
+  /* ---------- RESULT SCREENS ---------- */
+  .result-text{
+    color: var(--white);
+    font-size:11vw;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+    text-shadow: 0 0 20px rgba(224,18,31,0.7);
+    animation: pop 0.4s cubic-bezier(.2,1.4,.4,1);
+  }
+  .result-sub{
+    margin-top:5vw;
+    color:var(--dim);
+    font-size:4.2vw;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    animation: blink 1.6s ease-in-out infinite;
+  }
+  @keyframes pop{
+    0%{ transform:scale(0.4); opacity:0; }
+    100%{ transform:scale(1); opacity:1; }
+  }
+
+  .day-pill{
+    position:absolute;
+    top:6vh;
+    color: var(--gold);
+    font-size:3.6vw;
+    letter-spacing:0.2em;
+    font-weight:700;
+    border:1px solid rgba(212,166,54,0.4);
+    padding:1.6vw 4vw;
+    border-radius:100px;
+    text-transform:uppercase;
+    opacity:0.85;
+  }
+
+  /* ---------- WHATSAPP SHARE ---------- */
+  .wa-btn{
+    margin-top:6vw;
+    display:inline-flex;
+    align-items:center;
+    gap:2.5vw;
+    background: var(--wa);
+    color:#04170d;
+    font-size:4vw;
+    font-weight:800;
+    letter-spacing:0.03em;
+    padding:3.2vw 6vw;
+    border-radius:100px;
+    border:none;
+    cursor:pointer;
+    text-decoration:none;
+    box-shadow: 0 4px 18px rgba(37,211,102,0.35);
+  }
+  .wa-btn .ico{ font-size:5vw; }
+
+  /* ---------- LOCKED ---------- */
+  #screen-locked .intro-emoji{ font-size:16vw; animation:none; }
+  #screen-locked .result-text{
+    color: var(--gold);
+    font-size:9vw;
+    text-shadow:0 0 20px rgba(212,166,54,0.6);
+  }
+  #screen-locked .result-sub2{
+    margin-top:3vw;
+    color: var(--white);
+    font-size:4vw;
+    font-weight:400;
+    opacity:0.75;
+  }
+
+  /* ---------- FINAL ---------- */
+  #screen-final .result-text{ color: var(--gold); text-shadow:0 0 20px rgba(212,166,54,0.6); }
+  .restart-btn{
+    margin-top:6vw;
+    background:transparent;
+    border:2px solid var(--red);
+    color:var(--red-glow);
+    font-size:4vw;
+    font-weight:700;
+    letter-spacing:0.15em;
+    text-transform:uppercase;
+    padding:3.5vw 7vw;
+    border-radius:100px;
+    cursor:pointer;
+  }
+  .reset-link{
+    position:absolute;
+    bottom:4vh;
+    color: var(--dim);
+    font-size:3vw;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    opacity:0.55;
+    background:none;
+    border:none;
+    text-decoration:underline;
+    cursor:pointer;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- INTRO -->
+  <div id="screen-intro" class="screen active">
+    <div class="intro-emoji">😈</div>
+    <div class="intro-message">VC PERDEU!<br>AGORA PAGA!</div>
+    <div class="intro-hint">toque na tela para continuar</div>
+  </div>
+
+  <!-- DURATION QUESTION -->
+  <div id="screen-duration-q" class="screen">
+    <div class="mystery-btn" id="durationBtn">?</div>
+    <div class="legend">Quanto tempo vc vai pagar?</div>
+  </div>
+
+  <!-- DURATION RESULT -->
+  <div id="screen-duration-r" class="screen">
+    <div class="result-text" id="durationResultText"></div>
+    <div class="result-sub">toque na tela para continuar</div>
+  </div>
+
+  <!-- DAY QUESTION -->
+  <div id="screen-day-q" class="screen">
+    <div class="day-pill" id="dayPill"></div>
+    <div class="mystery-btn" id="dayBtn">?</div>
+    <div class="legend" id="dayLegend"></div>
+  </div>
+
+  <!-- DAY RESULT -->
+  <div id="screen-day-r" class="screen">
+    <div class="day-pill" id="dayResultPill"></div>
+    <div class="result-text" id="dayResultText"></div>
+    <a class="wa-btn" id="waShareDay" target="_blank" rel="noopener">
+      <span class="ico">📤</span> Enviar no WhatsApp
+    </a>
+    <div class="result-sub" id="dayResultSub">toque na tela para continuar</div>
+  </div>
+
+  <!-- LOCKED (already paid today) -->
+  <div id="screen-locked" class="screen">
+    <div class="intro-emoji">⏳</div>
+    <div class="day-pill" id="lockedPill"></div>
+    <div class="result-text">JÁ PAGOU HOJE!</div>
+    <div class="result-sub2">Volta amanhã pra continuar pagando 😈</div>
+    <button class="reset-link" id="resetFromLocked">reiniciar tudo</button>
+  </div>
+
+  <!-- FINAL -->
+  <div id="screen-final" class="screen">
+    <div class="intro-emoji">🔥</div>
+    <div class="result-text">ACABOU!</div>
+    <div class="result-sub" style="animation:none; opacity:1;">Foi um prazer cobrar a dívida 😏</div>
+    <a class="wa-btn" id="waShareFinal" target="_blank" rel="noopener">
+      <span class="ico">📤</span> Enviar no WhatsApp
+    </a>
+    <button class="restart-btn" id="restartBtn">Jogar de novo</button>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var STORAGE_KEY = "vc_perdeu_state_v1";
+
+  var screens = {};
+  ["intro","duration-q","duration-r","day-q","day-r","locked","final"].forEach(function(k){
+    screens[k] = document.getElementById("screen-"+k);
+  });
+
+  function show(key){
+    Object.keys(screens).forEach(function(k){
+      screens[k].classList.toggle("active", k === key);
+    });
+  }
+
+  var DURATIONS = [
+    { label: "2 Dias", days: 2 },
+    { label: "5 Dias", days: 5 },
+    { label: "1 Semana", days: 7 },
+    { label: "2 Semanas", days: 14 }
+  ];
+
+  // Weighted: 70% "Vai Mamar hj!", 30% the other option
+  var DAY_RESULTS_WEIGHTED = [
+    { text: "Vai Mamar hj!", weight: 70 },
+    { text: "Se safou heim! Mais ainda falta uns dias.", weight: 30 }
+  ];
+
+  var ORDINALS = [
+    "", "primeiro", "segundo", "terceiro", "quarto", "quinto", "sexto",
+    "sétimo", "oitavo", "nono", "décimo", "décimo primeiro", "décimo segundo",
+    "décimo terceiro", "décimo quarto"
+  ];
+
+  var state = { totalDays: 0, currentDay: 1, lastAnsweredDate: null };
+
+  function todayStr(){
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+  }
+
+  function saveState(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  }
+  function loadState(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) state = JSON.parse(raw);
+    }catch(e){}
+  }
+  function clearState(){
+    state = { totalDays: 0, currentDay: 1, lastAnsweredDate: null };
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  }
+
+  function pickRandom(arr){
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function pickWeighted(arr){
+    var total = arr.reduce(function(s,i){ return s + i.weight; }, 0);
+    var r = Math.random() * total;
+    for (var i = 0; i < arr.length; i++){
+      if (r < arr[i].weight) return arr[i].text;
+      r -= arr[i].weight;
+    }
+    return arr[arr.length-1].text;
+  }
+
+  function ordinalWord(n){
+    if (n < ORDINALS.length) return ORDINALS[n];
+    return n + "º";
+  }
+
+  function waLink(text){
+    return "https://wa.me/?text=" + encodeURIComponent(text);
+  }
+
+  function renderDayQuestion(){
+    document.getElementById("dayPill").textContent =
+      "DIA " + state.currentDay + " DE " + state.totalDays;
+    var word = ordinalWord(state.currentDay);
+    var text = (state.currentDay === 1)
+      ? "Bora paga seu primeiro dia safada ?"
+      : "Bora paga seu " + word + " dia safada ?";
+    document.getElementById("dayLegend").textContent = text;
+    show("day-q");
+  }
+
+  function renderLocked(){
+    document.getElementById("lockedPill").textContent =
+      "DIA " + (state.currentDay - 1) + " DE " + state.totalDays + " PAGO";
+    show("locked");
+  }
+
+  function checkResumeOrFresh(){
+    loadState();
+    if (!state.totalDays){
+      show("intro");
+      return;
+    }
+    if (state.currentDay > state.totalDays){
+      show("final");
+      return;
+    }
+    if (state.lastAnsweredDate === todayStr()){
+      renderLocked();
+      return;
+    }
+    renderDayQuestion();
+  }
+
+  // INTRO -> DURATION QUESTION
+  screens.intro.addEventListener("click", function(){
+    show("duration-q");
+  });
+
+  // DURATION BUTTON -> DURATION RESULT
+  document.getElementById("durationBtn").addEventListener("click", function(e){
+    e.stopPropagation();
+    var choice = pickRandom(DURATIONS);
+    state.totalDays = choice.days;
+    state.currentDay = 1;
+    state.lastAnsweredDate = null;
+    saveState();
+    document.getElementById("durationResultText").textContent = choice.label;
+    show("duration-r");
+  });
+
+  // DURATION RESULT -> DAY QUESTION (day 1)
+  screens["duration-r"].addEventListener("click", function(){
+    renderDayQuestion();
+  });
+
+  // DAY BUTTON -> DAY RESULT
+  document.getElementById("dayBtn").addEventListener("click", function(e){
+    e.stopPropagation();
+    var result = pickWeighted(DAY_RESULTS_WEIGHTED);
+    document.getElementById("dayResultPill").textContent =
+      "DIA " + state.currentDay + " DE " + state.totalDays;
+    document.getElementById("dayResultText").textContent = result;
+
+    var msg = "Dia " + state.currentDay + " de " + state.totalDays + ": " + result;
+    document.getElementById("waShareDay").href = waLink(msg);
+
+    var sub = document.getElementById("dayResultSub");
+    var willFinish = (state.currentDay >= state.totalDays);
+    sub.textContent = willFinish ? "toque na tela para finalizar" : "toque na tela para continuar";
+
+    state.lastAnsweredDate = todayStr();
+    saveState();
+
+    show("day-r");
+  });
+
+  // DAY RESULT -> LOCKED (until tomorrow) or FINAL
+  screens["day-r"].addEventListener("click", function(e){
+    if (e.target.closest(".wa-btn")) return; // let the whatsapp link work
+    state.currentDay += 1;
+    saveState();
+    if (state.currentDay > state.totalDays){
+      show("final");
+    } else {
+      renderLocked();
+    }
+  });
+
+  // FINAL SHARE link content
+  screens.final.addEventListener("click", function(e){
+    if (e.target.id === "restartBtn"){
+      clearState();
+      show("intro");
+      return;
+    }
+  });
+  document.getElementById("waShareFinal").addEventListener("click", function(){
+    var msg = "Terminei de pagar os " + (state.totalDays || "") + " dias! 🔥";
+    this.href = waLink(msg);
+  });
+
+  document.getElementById("resetFromLocked").addEventListener("click", function(e){
+    e.stopPropagation();
+    clearState();
+    show("intro");
+  });
+
+  checkResumeOrFresh();
+})();
+</script>
+</body>
+</html>
